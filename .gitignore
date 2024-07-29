@@ -2,4 +2,4 @@ cv_flask_app/.env
 
 venv
 
-cv_flask_app\app\__pycache__
+cv_flask_app/app/__pycache__
