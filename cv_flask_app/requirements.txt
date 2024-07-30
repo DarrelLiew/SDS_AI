@@ -3,3 +3,5 @@ mediapipe
 opencv-python
 google-cloud-storage
 python-dotenv
+numpy
+
