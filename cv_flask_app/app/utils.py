@@ -16,7 +16,7 @@ def process_video_cv(file_path):
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     project_root = os.path.dirname(os.path.abspath(__file__))  # Root directory of your project
     output_file_path = os.path.join(project_root, 'output_video.mp4')
-    output_video = cv2.VideoWriter(output_file_path, cv2.VideoWriter_fourcc(*'mp4v'), 30, (1280,720))
+    output_video = cv2.VideoWriter(output_file_path, cv2.VideoWriter_fourcc(*'X264'), 30, (1280,720))
     print(frame_width)
     print(frame_height)
 
@@ -62,11 +62,8 @@ def process_video_cv(file_path):
         cTime = time.time()
         fps = 1 / (cTime - pTime)
         pTime = cTime
-        cv2.imshow("Image", img)
         if start_writing ==True:
             output_video.write(img)
-        if cv2.waitKey(1) & 0xFF == 27:  # Proper place to check for escape condition
-            break
 
     cap.release()
     output_video.release()
@@ -137,3 +134,111 @@ def file_exists(bucket, file_name):
         if blob.name == file_name:
             return True
     return False
+
+
+# import cv2
+# import mediapipe as mp
+# import math
+# import numpy as np
+# import time
+# import os
+# import subprocess
+# import platform
+
+# def process_video_cv(file_path):
+#     mpDraw = mp.solutions.drawing_utils
+#     mpPose = mp.solutions.pose
+#     pose = mpPose.Pose()
+#     cap = cv2.VideoCapture(file_path)
+
+#     pTime = 0
+#     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+#     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+#     frame_rate = cap.get(cv2.CAP_PROP_FPS)
+#     project_root = os.path.dirname(os.path.abspath(__file__))  # Root directory of your project
+#     output_file_path = os.path.join(project_root, 'output_video.mp4')
+
+#     # Determine the path to the FFmpeg binary
+#     system_os = platform.system()
+#     if system_os == 'Windows':
+#         ffmpeg_path = os.path.join(project_root, 'bin', 'ffmpeg_windows.exe')
+#     elif system_os == 'Linux':
+#         ffmpeg_path = os.path.join(project_root, 'bin', 'ffmpeg_linux')
+#     else:
+#         raise RuntimeError('Unsupported operating system')
+
+#     ffmpeg_cmd = [
+#         ffmpeg_path,
+#         '-y',  # Overwrite output file if it exists
+#         '-f', 'rawvideo',  # Input format
+#         '-s', f'{frame_width}x{frame_height}',  # Frame size
+#         '-pix_fmt', 'bgr24',  # Pixel format
+#         '-r', f'{frame_rate}',  # Frame rate
+#         '-i', 'pipe:0',  # Input from pipe
+#         '-c:v', 'libx264',  # Video codec
+#         '-preset', 'medium',  # Encoding preset
+#         '-crf', '23',  # Quality level
+#         '-pix_fmt', 'yuv420p',  # Output pixel format
+#         output_file_path
+#     ]
+    
+#     process = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+
+#     sit_stand_results = False
+#     start_writing = False
+#     while cap.isOpened():
+#         success, img = cap.read()
+#         if not success:
+#             break  # Exits the loop if no frames are left to read or if there's an error
+#         img = resize_image(img)
+#         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+#         results = pose.process(imgRGB)
+
+#         if results.pose_landmarks:
+#             mpDraw.draw_landmarks(img, results.pose_landmarks, mpPose.POSE_CONNECTIONS)
+#             key_points = {}
+#             for id, lm in enumerate(results.pose_landmarks.landmark):
+#                 h, w, c = img.shape
+#                 cx, cy = int(lm.x * w), int(lm.y * h)
+#                 cv2.circle(img, (cx, cy), 5, (255, 0, 0), cv2.FILLED)
+#                 if id == 28:
+#                     key_points["right Ankle"]= lm
+#                 elif id == 26:
+#                     key_points["right Knee"]= lm
+#                 elif id == 24:
+#                     key_points["right Hip"]= lm
+#                 elif id == 27:
+#                     key_points["left Ankle"]= lm                
+#                 elif id == 25:
+#                     key_points["left Knee"]= lm
+#                 elif id == 23:
+#                     key_points["left Hip"]= lm
+
+#             if sit_stand_test(key_points) == True:
+#                 sit_stand_results = True
+
+#             if sit_stand_results == True:
+#                 cv2.putText(img, "Test: Passed", (70, 50), cv2.FONT_HERSHEY_PLAIN, 3, (255, 0, 0), 3)
+#             else:
+#                 cv2.putText(img, "Test: Failed", (70, 50), cv2.FONT_HERSHEY_PLAIN, 3, (255, 0, 0), 3)
+#             start_writing = True
+
+#         cTime = time.time()
+#         fps = 1 / (cTime - pTime)
+#         pTime = cTime
+#         cv2.imshow("Image", img)
+#         if start_writing:
+#             process.stdin.write(img.tobytes())
+#         if cv2.waitKey(1) & 0xFF == 27:  # Proper place to check for escape condition
+#             break
+
+#     cap.release()
+#     process.stdin.close()
+#     process.wait()
+#     cv2.destroyAllWindows()
+
+#     # Capture and print FFmpeg stderr for debugging
+#     stderr = process.stderr.read()
+#     print(stderr.decode())
+
+#     return output_file_path, sit_stand_results

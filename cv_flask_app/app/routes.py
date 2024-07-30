@@ -39,14 +39,16 @@ def init_routes(app):
                 print(f'Temporary file saved at: {temp_file_path}')
                 output_file_path, result = process_video_cv(temp_file_path)
 
-                output_blob = bucket.blob('output_video.mp4')
-                output_blob.upload_from_filename("C:/Users/royce/OneDrive/Desktop/Term 5 Service Design Studio/SDS_AI/sit_stand_2.mp4", content_type='video/mp4')
+                output_file_name = file_name.split('.')[0] + '_AI.mp4'
+
+                output_blob = bucket.blob(output_file_name)
+                # output_blob.upload_from_filename("C:/Users/royce/OneDrive/Desktop/Term 5 Service Design Studio/SDS_AI/sit_stand_2.mp4", content_type='video/mp4')
                 output_blob.upload_from_filename(output_file_path, content_type='video/mp4')
-                print(f'Uploaded processed video to GCS at: output_video.mp4')
+                print(f'Uploaded processed video to GCS at: {output_file_name}.mp4')
 
                 # Clean up temporary files
                 os.remove(temp_file_path)
-                # os.remove(output_file_path)
+                os.remove(output_file_path)
 
                 # Return the URL to the processed video
                 output_url = output_blob.public_url

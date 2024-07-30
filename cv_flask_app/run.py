@@ -8,3 +8,4 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 3002))  # Default to 3002 for local, override to 8080 in container
     print(f"Running Flask app on http://localhost:{port}")
     app.run(debug=True, host=host, port=port)
+    

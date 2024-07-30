@@ -4,4 +4,6 @@ opencv-python
 google-cloud-storage
 python-dotenv
 numpy
+waitress
 
+#python -m pip install -r requirements.txt
