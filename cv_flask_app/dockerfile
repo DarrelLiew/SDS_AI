@@ -1,21 +1,77 @@
+# # Use the official Python image from the Docker Hub
+# FROM python:3.9
+
+# # Set the working directory in the container
+# WORKDIR /app
+
+# # Copy the requirements file into the container at /app
+# COPY requirements.txt /app/
+
+# # Install any needed packages specified in requirements.txt
+# RUN pip install --no-cache-dir -r requirements.txt
+
+# # Install libGL Some error during cloud run due to missing import and ffmpeg for codec support
+# RUN apt-get update && \
+#     apt-get install -y \
+#     libx264-dev \
+#     libx265-dev \ 
+#     libgl1-mesa-glx \
+#     ffmpeg \
+#     libavcodec-extra \
+#     && apt-get clean && \
+#     rm -rf /var/lib/apt/lists/*
+
+# # Verify FFmpeg installation
+# RUN ffmpeg -version
+    
+# # Copy the current directory contents into the container at /app
+# COPY . /app
+
+# # Expose the port that the Flask app will run on
+# EXPOSE 8080
+
+# # Set environment variable for Flask app
+# ENV FLASK_APP=run.py
+# ENV PORT=8080
+
+# # Run the Flask app with Waitress
+# CMD ["waitress-serve", "--host=0.0.0.0", "--port=8080", "run:app"]
+
 # Use the official Python image from the Docker Hub
 FROM python:3.9
 
 # Set the working directory in the container
 WORKDIR /app
 
+# Install Miniconda
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    chmod +x Miniconda3-latest-Linux-x86_64.sh && \
+    ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda && \
+    rm Miniconda3-latest-Linux-x86_64.sh && \
+    /opt/conda/bin/conda clean -a -y
+
+# Set environment variables
+ENV PATH /opt/conda/bin:$PATH
+
+# Create and activate the conda environment, then install OpenCV
+RUN conda create -n myenv python=3.9 -y && \
+    /opt/conda/bin/conda install -n myenv -c conda-forge opencv -y
+
+# Install additional dependencies
+RUN apt-get update && \
+    apt-get install -y \
+    libgl1-mesa-glx \
+    ffmpeg \
+    libavcodec-extra \
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Copy the requirements file into the container at /app
 COPY requirements.txt /app/
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN /opt/conda/bin/conda run -n myenv pip install --no-cache-dir -r requirements.txt
 
-# Install libGL Some error during cloud run due to missing import
-RUN apt-get update && \
-    apt-get install -y libgl1-mesa-glx && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-    
 # Copy the current directory contents into the container at /app
 COPY . /app
 
@@ -27,4 +83,4 @@ ENV FLASK_APP=run.py
 ENV PORT=8080
 
 # Run the Flask app with Waitress
-CMD ["waitress-serve", "--host=0.0.0.0", "--port=8080", "run:app"]
+CMD ["/opt/conda/bin/conda", "run", "-n", "myenv", "waitress-serve", "--host=0.0.0.0", "--port=8080", "run:app"]

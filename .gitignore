@@ -2,8 +2,11 @@ cv_flask_app/.env
 
 venv
 
-cv_flask_app/app/__pycache__
+cv_flask_app/app1/__pycache__
 
 ninkatec-cv-6d5aa885c7bc.json
 
+ninkatec-2-d2112f9ef735.json
+
 /__pycache__
+
