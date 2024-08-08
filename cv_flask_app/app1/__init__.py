@@ -11,7 +11,7 @@ def create_app():
     load_dotenv(dotenv_path=dotenv_path)
 
     # Initialize Google Cloud Storage client
-    credentials_path = 'ninkatec-2-d2112f9ef735.json'
+    credentials_path = 'ninkatec-2-223b74173d7a.json'
     storage_client = storage.Client.from_service_account_json(credentials_path)
     app.config['STORAGE_CLIENT'] = storage_client
     
